@@ -11,13 +11,13 @@ func ToMongoAggIds(q query.Query, ml query.ModelLink) (mongo.Pipeline, error) {
 		bson.D{{Key: "$sort", Value: bson.M{"_id": -1}}},
 	}
 
-	prjAgg, err := q.Fields().toMongoProject(ml)
+	prjAgg, err := Project(q.Fields(), ml)
 	if err != nil {
 		return nil, err
 	}
 	agg = append(agg, prjAgg...)
 
-	m, err := q.Filter.ToMongo(ml.FullModelType)
+	m, err := Filter(q.Filter, ml.FullModelType)
 	if err != nil {
 		return nil, err
 	}
@@ -25,7 +25,7 @@ func ToMongoAggIds(q query.Query, ml query.ModelLink) (mongo.Pipeline, error) {
 		agg = append(agg, bson.D{{Key: "$match", Value: m}})
 	}
 
-	s := q.Sort.ToMongoSort()
+	s := Sort(q.Sort)
 	if len(s) > 0 {
 		sort := append(
 			mtoD(s),

@@ -7,7 +7,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-func ToMongoSort(s query.Sort) bson.M {
+func Sort(s query.Sort) bson.M {
 	m := bson.M{}
 
 	for _, f := range s {

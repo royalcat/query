@@ -12,7 +12,7 @@ import (
 )
 
 func Find(q query.Query, m reflect.Type) (bson.D, *options.FindOptions, error) {
-	d, err := q.Filter.ToMongo(m)
+	d, err := Filter(q.Filter, m)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -20,7 +20,7 @@ func Find(q query.Query, m reflect.Type) (bson.D, *options.FindOptions, error) {
 	opts := options.Find().
 		SetSkip(int64(q.Pagination.Offset)).
 		SetLimit(int64(q.Pagination.Limit)).
-		SetSort(q.Sort.ToMongoSort())
+		SetSort(Sort(q.Sort))
 
 	return d, opts, nil
 }
@@ -29,7 +29,7 @@ func Filter(q query.Filter, model reflect.Type) (bson.D, error) {
 	mongoFilter := bson.D{}
 	for k, v := range q {
 		name, operator := query.ParseKey(k)
-		e, err := operator.toMongo(name, v, model)
+		e, err := mongoOperator(operator, name, v, model)
 		if err != nil {
 			return nil, fmt.Errorf("query parsing error: %w", err)
 		}
@@ -39,7 +39,7 @@ func Filter(q query.Filter, model reflect.Type) (bson.D, error) {
 	return mongoFilter, nil
 }
 
-func toMongo(q query.Operator, name string, value string, v reflect.Type) (bson.E, error) {
+func mongoOperator(q query.Operator, name string, value string, v reflect.Type) (bson.E, error) {
 	if v.Kind() == reflect.Ptr {
 		v = v.Elem()
 	}

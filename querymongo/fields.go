@@ -10,13 +10,13 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-func toMongoProject(fields query.Fields, res query.ModelLink) (mongo.Pipeline, error) {
+func Project(fields query.Fields, res query.ModelLink) (mongo.Pipeline, error) {
 	agg := mongo.Pipeline{}
 	q := fields
 	prjFields := []string{}
 	for k, v := range res.Resolvers {
 		var g query.Fields
-		g, q = q.groupFilter(k.ResolvedName)
+		g, q = q.GroupFilter(k.ResolvedName)
 		if len(g) == 0 {
 			continue
 		}
@@ -28,8 +28,8 @@ func toMongoProject(fields query.Fields, res query.ModelLink) (mongo.Pipeline, e
 
 		switch k.Type {
 		case query.Array:
-			g = g.cleanFilterFirstPart()
-			childAgg, err := g.toMongoProject(v)
+			g = cleanFilterFirstPart(g)
+			childAgg, err := Project(g, v)
 			if err != nil {
 				return nil, err
 			}
@@ -39,7 +39,7 @@ func toMongoProject(fields query.Fields, res query.ModelLink) (mongo.Pipeline, e
 				childAgg,
 			)...)
 		case query.Single:
-			childAgg, err := g.toMongoProject(v)
+			childAgg, err := Project(g, v)
 			if err != nil {
 				return nil, err
 			}
@@ -49,7 +49,7 @@ func toMongoProject(fields query.Fields, res query.ModelLink) (mongo.Pipeline, e
 				childAgg,
 			)...)
 		case query.SingleLast:
-			childAgg, err := g.toMongoProject(v)
+			childAgg, err := Project(g, v)
 			if err != nil {
 				return nil, err
 			}
@@ -69,7 +69,7 @@ func toMongoProject(fields query.Fields, res query.ModelLink) (mongo.Pipeline, e
 		}
 	}
 	prjFields = append(prjFields, q...)
-	prjFields = SliceUnique(prjFields)
+	prjFields = query.SliceUnique(prjFields)
 
 	if len(prjFields) > 0 {
 		project := bson.D{}
