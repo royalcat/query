@@ -60,3 +60,33 @@ func TestApplyFilter(t *testing.T) {
 		{ID: 1, Name: "aaa"},
 	}, out)
 }
+
+func BenchmarkApplyFilter(b *testing.B) {
+	type testStruct struct {
+		ID   int    `json:"id"`
+		Name string `json:"name"`
+	}
+	data := []testStruct{
+		{ID: 4, Name: "aac"},
+		{ID: 3, Name: "bbb"},
+		{ID: 2, Name: "aab"},
+		{ID: 1, Name: "aaa"},
+	}
+	f := query.Filter{
+		"name{substr}": "a",
+	}
+	// require.Equal([]testStruct{
+	// 	{ID: 4, Name: "aac"},
+	// 	{ID: 2, Name: "aab"},
+	// 	{ID: 1, Name: "aaa"},
+	// }, out)
+	b.ReportAllocs()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_, err := queryreflect.ApplyFilter(f, data)
+		if err != nil {
+			b.Fatalf("error applying filter: %s", err.Error())
+		}
+	}
+
+}
