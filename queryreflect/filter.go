@@ -13,50 +13,49 @@ func ApplyFilter[D any](f query.Filter, in []D) ([]D, error) {
 	}
 	out := []D{}
 	for _, v := range in {
-		if cond(v) {
+		res, err := cond(v)
+		if err != nil {
+			return nil, err
+		}
+		if res {
 			out = append(out, v)
 		}
 	}
 	return out, nil
 }
 
-type condition[D any] func(v D) bool
+type conditionErr[D any] func(v D) (bool, error)
 
-func generateReflectFilter[D any](f query.Filter) (condition[D], error) {
-	conditions := []condition[D]{}
-	var m D
-	t := reflect.TypeOf(m)
+func generateReflectFilter[D any](f query.Filter) (conditionErr[D], error) {
+	conditions := []conditionErr[D]{}
 
-	for key, value := range f {
-		name, operator := query.ParseKey(key)
-		t2, err := query.GetTypeByPath(t, name)
-		if err != nil {
-			return nil, err
-		}
-		val2, err := query.GetValueForType(t2, value)
-		if err != nil {
-			return nil, err
-		}
-
-		f := func(data D) bool {
-			vs1, _ := getValueByPath(reflect.ValueOf(data), name)
+	for _, filter := range f {
+		f := func(data D) (bool, error) {
+			vs1, err := getValueByPath(reflect.ValueOf(data), filter.Field)
+			if err != nil {
+				return false, err
+			}
 			for _, v1 := range vs1 {
-				if reflectCompare(operator, v1, reflect.ValueOf(val2)) {
-					return true
+				if reflectCompare(filter.Op, v1, reflect.ValueOf(filter.Value)) {
+					return true, nil
 				}
 			}
-			return false
+			return false, nil
 		}
 
 		conditions = append(conditions, f)
 	}
 
-	return func(v D) bool {
+	return func(v D) (bool, error) {
 		for _, c := range conditions {
-			if !c(v) {
-				return false
+			res, err := c(v)
+			if err != nil {
+				return false, err
+			}
+			if !res {
+				return false, nil
 			}
 		}
-		return true
+		return true, nil
 	}, nil
 }

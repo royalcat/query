@@ -28,7 +28,7 @@ func reflectCompare(o query.Operator, v1, v2 reflect.Value) bool {
 			return false
 		}
 		switch o {
-		case query.OperatorEqual:
+		case query.OperatorEqual, query.OperatorDefault:
 			return v1.Float() == v2.Float()
 		case query.OperatorNotEqual:
 			return v1.Float() != v2.Float()
@@ -46,7 +46,7 @@ func reflectCompare(o query.Operator, v1, v2 reflect.Value) bool {
 			return false
 		}
 		switch o {
-		case query.OperatorEqual:
+		case query.OperatorEqual, query.OperatorDefault:
 			return v1.Int() == v2.Int()
 		case query.OperatorNotEqual:
 			return v1.Int() != v2.Int()
@@ -66,7 +66,7 @@ func reflectCompare(o query.Operator, v1, v2 reflect.Value) bool {
 			return false
 		}
 		switch o {
-		case query.OperatorEqual:
+		case query.OperatorEqual, query.OperatorDefault:
 			return v1.String() == v2.String()
 		case query.OperatorNotEqual:
 			return v1.String() != v2.String()
@@ -167,7 +167,7 @@ func getFieldValueByJsonTag(val reflect.Value, name string) (reflect.Value, bool
 	typ := val.Type()
 	for i := 0; i < typ.NumField(); i++ {
 		field := typ.Field(i)
-		key := strings.Split(field.Tag.Get("json"), ",")[0]
+		key, _, _ := strings.Cut(field.Tag.Get("json"), ",")
 		if key == name {
 			return val.Field(i), true
 		}

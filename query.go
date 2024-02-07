@@ -1,5 +1,7 @@
 package query
 
+import "slices"
+
 type Query struct {
 	Search     string
 	Filter     Filter
@@ -10,7 +12,7 @@ type Query struct {
 func (q Query) Copy() Query {
 	return Query{
 		Search:     q.Search,
-		Filter:     CopyMap(q.Filter),
+		Filter:     slices.Clone(q.Filter),
 		Sort:       q.Sort.Copy(),
 		Pagination: q.Pagination,
 	}

@@ -6,18 +6,12 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-func ToMongoAggIds(q query.Query, ml query.ModelLink) (mongo.Pipeline, error) {
+func ToMongoAggIds[Model any](q query.Query) (mongo.Pipeline, error) {
 	agg := mongo.Pipeline{
 		bson.D{{Key: "$sort", Value: bson.M{"_id": -1}}},
 	}
 
-	prjAgg, err := Project(q.Fields(), ml)
-	if err != nil {
-		return nil, err
-	}
-	agg = append(agg, prjAgg...)
-
-	m, err := Filter(q.Filter, ml.FullModelType)
+	m, err := Filter[Model](q.Filter)
 	if err != nil {
 		return nil, err
 	}

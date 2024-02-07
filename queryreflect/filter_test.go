@@ -23,7 +23,7 @@ func TestApplyFilterArrayAny(t *testing.T) {
 		{Names: []int{1, 4}},
 	}
 	f := query.Filter{
-		"names": "1",
+		{Field: "names", Value: 1},
 	}
 
 	out, err := queryreflect.ApplyFilter(f, data)
@@ -50,7 +50,7 @@ func TestApplyFilter(t *testing.T) {
 		{ID: 1, Name: "aaa"},
 	}
 	f := query.Filter{
-		"name{substr}": "a",
+		{Field: "name", Op: query.OperatorSubString, Value: "a"},
 	}
 	out, err := queryreflect.ApplyFilter(f, data)
 	require.NoError(err)
@@ -73,7 +73,7 @@ func BenchmarkApplyFilter(b *testing.B) {
 		{ID: 1, Name: "aaa"},
 	}
 	f := query.Filter{
-		"name{substr}": "a",
+		{Field: "name", Op: query.OperatorSubString, Value: "a"},
 	}
 	// require.Equal([]testStruct{
 	// 	{ID: 4, Name: "aac"},

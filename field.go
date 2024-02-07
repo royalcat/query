@@ -6,7 +6,7 @@ import (
 
 type Fields []string
 
-func (f Fields) GroupFilter(prefix string) (Fields, Fields) {
+func (f Fields) GroupFilterByPrefix(prefix string) (Fields, Fields) {
 	g := Fields{}
 	r := Fields{}
 	for _, k := range f {

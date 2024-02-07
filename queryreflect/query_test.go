@@ -27,7 +27,7 @@ func TestApplyQuery(t *testing.T) {
 	}
 	q := query.Query{
 		Filter: query.Filter{
-			"name{substr}": "a",
+			{Field: "name", Op: query.OperatorSubString, Value: "a"},
 		},
 		Sort: query.Sort{
 			{Key: "id", Order: query.ASC},
@@ -62,7 +62,7 @@ func TestApplyQueryArrayIndex(t *testing.T) {
 	}
 	f := query.Query{
 		Filter: query.Filter{
-			"names.0{gt}": "1",
+			{Field: "names.0", Op: query.OperatorGreater, Value: 1},
 		},
 		Sort: query.Sort{
 			{Key: "names.0", Order: query.ASC},
